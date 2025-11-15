@@ -1,13 +1,16 @@
-# app.py
 import streamlit as st
-import pickle
+import pickle, gzip
 from typing import List
 
 # --------------------------- Load Model Data ---------------------------
 @st.cache_data
 def load_data():
     movies = pickle.load(open('model/movie_list.pkl', 'rb'))
-    similarity = pickle.load(open('model/similarity.pkl', 'rb'))
+
+    # load compressed file
+    with gzip.open('model/similarity_compressed.pkl.gz', 'rb') as f:
+        similarity = pickle.load(f)
+
     return movies, similarity
 
 movies, similarity = load_data()
@@ -15,34 +18,30 @@ movies, similarity = load_data()
 # --------------------------- Page Config ---------------------------
 st.set_page_config(page_title="Movie Recommender", layout="wide")
 
-
-# --------------------------- CSS (Header Removed + Fixes) ---------------------------
+# --------------------------- CSS ---------------------------
 st.markdown(
     """
     <style>
 
-    /* REMOVE WHITE TOP STREAMLIT HEADER */
+    /* REMOVE STREAMLIT DEFAULT WHITE HEADER */
     header[data-testid="stHeader"] {
         opacity: 0 !important;
         height: 0px !important;
         display: none !important;
     }
 
-    /* Page background */
     .stApp {
       background: linear-gradient(180deg, #0f1724 0%, #0b1220 40%, #07101a 100%);
       color: #e6eef8;
       font-family: 'Segoe UI', Roboto, Arial;
     }
 
-    /* Bring content UP because header is gone */
     .main > div.block-container {
       padding-top: 2px !important;
       padding-left: 64px;
       padding-right: 64px;
     }
 
-    /* Title styling */
     #title {
       text-align: left;
       font-size: 44px;
@@ -59,7 +58,6 @@ st.markdown(
       font-weight: 600;
     }
 
-    /* Choose Movie Label */
     .select-label {
       color: #bcd6e6;
       font-weight: 700;
@@ -68,12 +66,10 @@ st.markdown(
       font-size: 15px;
     }
 
-    /* SELECT BOX - White Text Fix */
     div[data-baseweb="select"] div {
         color: #ffffff !important;
     }
 
-    /* Selectbox container */
     div[data-baseweb="select"] {
       max-width: 420px !important;
       margin-left: auto;
@@ -90,7 +86,6 @@ st.markdown(
       padding-left: 14px;
     }
 
-    /* Cards Grid */
     .cards-row {
       display: flex;
       justify-content: center;
@@ -100,7 +95,6 @@ st.markdown(
       margin-bottom: 26px;
     }
 
-    /* Card Style */
     .recommend-card {
       width: 220px;
       height: 140px;
@@ -127,7 +121,6 @@ st.markdown(
          0 30px 80px rgba(0,210,255,0.06);
     }
 
-    /* Footer */
     .footer {
       margin-top: 44px;
       margin-bottom: 24px;
@@ -146,19 +139,14 @@ st.markdown(
     .footer a { color: #9fe8ff; text-decoration: none; font-weight: 700; }
     .footer a:hover { color: #58c2ff; }
 
-    /* Mobile Fix */
     @media (max-width: 600px) {
-        .main > div.block-container {
-            padding-top: 4px !important;
-        }
+        .main > div.block-container { padding-top: 4px !important; }
         .select-label {
             margin-left: 0 !important;
             text-align: center;
             display: block;
         }
-        div[data-baseweb="select"] {
-            max-width: 92% !important;
-        }
+        div[data-baseweb="select"] { max-width: 92% !important; }
     }
 
     </style>
@@ -183,8 +171,6 @@ def recommend_titles(movie: str, topn: int = 5) -> List[str]:
     return [movies.iloc[pair[0]].title for pair in distances[1:topn+1]]
 
 recs = recommend_titles(selected_movie, topn=5)
-
-# Fill if needed
 while len(recs) < 5:
     recs.append("—")
 
@@ -193,7 +179,6 @@ cards_html = '<div class="cards-row">'
 for title in recs:
     cards_html += f'<div class="recommend-card"><div class="title">{title}</div></div>'
 cards_html += '</div>'
-
 st.markdown(cards_html, unsafe_allow_html=True)
 
 # --------------------------- Footer ---------------------------
@@ -205,8 +190,7 @@ st.markdown(
       <div>📧 <a href="mailto:zuberkhan7301@gmail.com">zuberkhan7301@gmail.com</a> | 📱 +91 8979298864</div>
       <div style="margin-top:6px;">🔗 
         <a href="https://github.com/Zuber-123" target="_blank">GitHub</a> • 
-        <a href="https://www.linkedin.com/in/zuber-khan7301
-" target="_blank">LinkedIn</a>
+        <a href="https://www.linkedin.com/in/zuber-khan7301" target="_blank">LinkedIn</a>
       </div>
       <div style="font-size:13px; margin-top:10px; color:#99cfe8;">Made with ❤️ using Streamlit</div>
     </div>
