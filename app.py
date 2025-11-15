@@ -1,17 +1,21 @@
 import streamlit as st
-import pickle, gzip
+import pickle
+import gzip
 from typing import List
 
 # --------------------------- Load Model Data ---------------------------
 @st.cache_data
 def load_data():
-    movies = pickle.load(open('model/movie_list.pkl', 'rb'))
+    # Load movies list (normal pickle file)
+    with open("model/movie_list.pkl", "rb") as f:
+        movies = pickle.load(f)
 
-    # load compressed file
-    with gzip.open('model/similarity_compressed.pkl.gz', 'rb') as f:
-        similarity = pickle.load(f)
+    # Load properly compressed similarity file
+    with gzip.open("model/similarity_compressed.pkl.gz", "rb") as f:
+        similarity = pickle.loads(f.read())   # <-- IMPORTANT fix
 
     return movies, similarity
+
 
 movies, similarity = load_data()
 
